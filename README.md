@@ -1,2 +1,2 @@
-# -expensebot-t3
+# Expensebot
 Telegram bot for tracking expenses (in Typescript)
