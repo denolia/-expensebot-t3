@@ -59,7 +59,7 @@ function checkUser(ctx: ContextType) {
     };
   }
   const username = ctx.update.message.from.username;
-  console.log(username);
+
   if (!username || !registeredUsers.includes(username)) {
     return {
       notRegisteredReply: ctx.reply(
@@ -84,7 +84,7 @@ bot.command("newchat", (ctx: ContextType) => {
   if (!registered && notRegisteredReply) {
     return notRegisteredReply;
   }
-  if (username) {
+  if (username && messages[username]) {
     messages[username].length = 0;
   }
   return ctx.reply(`New chat created!`);
@@ -109,7 +109,7 @@ for (const _model of MODELS) {
     if (!registered && notRegisteredReply) {
       return notRegisteredReply;
     }
-    if (username) {
+    if (username && messages[username]) {
       messages[username].length = 0;
     }
     currentModel = ctx.message.text;
@@ -132,6 +132,10 @@ bot.on(message("text"), async (ctx) => {
     content: ctx.message.text,
   };
 
+  if (!messages[username]) {
+    messages[username] = [];
+  }
+
   messages[username].push(requestMessage);
 
   const completion = await openai.chat.completions.create({
@@ -141,6 +145,10 @@ bot.on(message("text"), async (ctx) => {
 
   const responseMessage = completion.choices[0].message;
   if (responseMessage) {
+    if (!messages[username]) {
+      messages[username] = [];
+    }
+
     messages[username].push({
       role: responseMessage.role,
       content: responseMessage.content,
