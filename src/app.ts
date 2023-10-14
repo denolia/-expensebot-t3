@@ -14,13 +14,9 @@ type ContextType = Context<{
   update_id: number;
 }>;
 
-let registeredUsers: string[] = [];
-const filePath = "./registered-users.json";
+const REGISTERED_USERS_FILE = "./registered-users.json";
 
-if (fs.existsSync(filePath)) {
-  const data = fs.readFileSync(filePath, "utf8");
-  registeredUsers = JSON.parse(data).users;
-} else {
+if (!fs.existsSync(REGISTERED_USERS_FILE)) {
   throw new Error("Please provide a registered-users.json file");
 }
 
@@ -38,7 +34,8 @@ const openai = new OpenAI({
   apiKey: openAiApiKey,
 });
 
-const messages: ChatCompletionMessageParam[] = [];
+type Username = string;
+const messages: Record<Username, ChatCompletionMessageParam[]> = {};
 
 const bot = new Telegraf(bot_token);
 console.log(bot);
@@ -48,6 +45,19 @@ const MODELS = ["gpt-3.5-turbo", "gpt-4"];
 let currentModel = MODELS[0];
 
 function checkUser(ctx: ContextType) {
+  let registeredUsers: string[] = [];
+
+  if (fs.existsSync(REGISTERED_USERS_FILE)) {
+    const data = fs.readFileSync(REGISTERED_USERS_FILE, "utf8");
+    registeredUsers = JSON.parse(data).users;
+  } else {
+    return {
+      notRegisteredReply: ctx.reply(
+        `Sorry ${ctx.update.message.from.first_name}, cannot check if you are registered`,
+      ),
+      registered: false,
+    };
+  }
   const username = ctx.update.message.from.username;
   console.log(username);
   if (!username || !registeredUsers.includes(username)) {
@@ -58,7 +68,7 @@ function checkUser(ctx: ContextType) {
       registered: false,
     };
   }
-  return { notRegisteredReply: null, registered: true };
+  return { notRegisteredReply: null, registered: true, username };
 }
 
 bot.start((ctx: ContextType) => {
@@ -70,11 +80,13 @@ bot.start((ctx: ContextType) => {
 });
 
 bot.command("newchat", (ctx: ContextType) => {
-  const { notRegisteredReply, registered } = checkUser(ctx);
+  const { notRegisteredReply, registered, username } = checkUser(ctx);
   if (!registered && notRegisteredReply) {
     return notRegisteredReply;
   }
-  messages.length = 0;
+  if (username) {
+    messages[username].length = 0;
+  }
   return ctx.reply(`New chat created!`);
 });
 
@@ -93,38 +105,43 @@ bot.command("setmodel", (ctx: ContextType) => {
 
 for (const _model of MODELS) {
   bot.hears(MODELS, (ctx) => {
-    const { notRegisteredReply, registered } = checkUser(ctx);
+    const { notRegisteredReply, registered, username } = checkUser(ctx);
     if (!registered && notRegisteredReply) {
       return notRegisteredReply;
     }
-    messages.length = 0;
+    if (username) {
+      messages[username].length = 0;
+    }
     currentModel = ctx.message.text;
     return ctx.reply(`Selected model: ${currentModel}`);
   });
 }
 
 bot.on(message("text"), async (ctx) => {
-  const { notRegisteredReply, registered } = checkUser(ctx);
+  const { notRegisteredReply, registered, username } = checkUser(ctx);
   if (!registered && notRegisteredReply) {
     return notRegisteredReply;
   }
+
+  if (!username) {
+    return ctx.reply(`Sorry, I cannot find your username`);
+  }
+
   const requestMessage: ChatCompletionMessageParam = {
     role: "user",
     content: ctx.message.text,
   };
-  messages.push(requestMessage);
 
-  // Call OpenAI API to generate response
+  messages[username].push(requestMessage);
+
   const completion = await openai.chat.completions.create({
     model: currentModel,
-    messages: messages,
+    messages: messages[username],
   });
 
-  // Display response message
   const responseMessage = completion.choices[0].message;
   if (responseMessage) {
-    // console.log((responseMessage.content));
-    messages.push({
+    messages[username].push({
       role: responseMessage.role,
       content: responseMessage.content,
     });
