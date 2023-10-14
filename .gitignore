@@ -1,4 +1,5 @@
 /.env
 node_modules
-./dist/
+./dist/**
 /dist/app.js
+/registered-users.json
