@@ -1,0 +1,1 @@
+nohup dist/app.js &
