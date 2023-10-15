@@ -1,2 +1,8 @@
-# Expensebot
-Telegram bot for tracking expenses (in Typescript)
+# Chat GPT bot
+Telegram bot providing access to Ghat GPT.
+
+### Stack
+
+- Typescript
+- telegraf
+- openai
