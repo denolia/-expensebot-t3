@@ -38,7 +38,7 @@ type Username = string;
 const messages: Record<Username, ChatCompletionMessageParam[]> = {};
 
 const bot = new Telegraf(bot_token);
-console.log(bot);
+console.log("Starting the bot...", Boolean(bot));
 
 const MODELS = ["gpt-3.5-turbo", "gpt-4"];
 
