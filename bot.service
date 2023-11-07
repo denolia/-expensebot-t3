@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenAI gpt api tg bot
+After=network.target
+
+[Service]
+WorkingDirectory=/path
+ExecStart=/path/startup.sh
+Restart=on-failure
+RestartSec=60s
+Type=simple
+User=me
+Group=me
+
+[Install]
+WantedBy=multi-user.target
