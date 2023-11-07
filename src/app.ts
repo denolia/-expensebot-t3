@@ -40,9 +40,13 @@ const messages: Record<Username, ChatCompletionMessageParam[]> = {};
 const bot = new Telegraf(bot_token);
 console.log("Starting the bot...", Boolean(bot));
 
-const MODELS = ["gpt-3.5-turbo", "gpt-4"];
+const MODELS = {
+  "gpt-3.5": "gpt-3.5-turbo",
+  "gpt-4": "gpt-4",
+  "gpt-4-turbo": "gpt-4-1106-preview",
+};
 
-let currentModel = MODELS[0];
+let currentModel = Object.keys(MODELS)[0] as keyof typeof MODELS;
 
 function checkUser(ctx: ContextType) {
   let registeredUsers: string[] = [];
@@ -97,25 +101,25 @@ bot.command("setmodel", (ctx: ContextType) => {
   }
   return ctx.reply(
     "Select the model",
-    Markup.keyboard(MODELS.map((model) => Markup.button.text(model)))
+    Markup.keyboard(
+      Object.keys(MODELS).map((model) => Markup.button.text(model)),
+    )
       .oneTime(true)
       .resize(),
   );
 });
 
-for (const _model of MODELS) {
-  bot.hears(MODELS, (ctx) => {
-    const { notRegisteredReply, registered, username } = checkUser(ctx);
-    if (!registered && notRegisteredReply) {
-      return notRegisteredReply;
-    }
-    if (username && messages[username]) {
-      messages[username].length = 0;
-    }
-    currentModel = ctx.message.text;
-    return ctx.reply(`Selected model: ${currentModel}`);
-  });
-}
+bot.hears(Object.keys(MODELS), (ctx) => {
+  const { notRegisteredReply, registered, username } = checkUser(ctx);
+  if (!registered && notRegisteredReply) {
+    return notRegisteredReply;
+  }
+  if (username && messages[username]) {
+    messages[username].length = 0;
+  }
+  currentModel = ctx.message.text as keyof typeof MODELS;
+  return ctx.reply(`Selected model: ${currentModel}`);
+});
 
 bot.on(message("text"), async (ctx) => {
   const { notRegisteredReply, registered, username } = checkUser(ctx);
@@ -139,7 +143,7 @@ bot.on(message("text"), async (ctx) => {
   messages[username].push(requestMessage);
 
   const completion = await openai.chat.completions.create({
-    model: currentModel,
+    model: MODELS[currentModel],
     messages: messages[username],
   });
 
