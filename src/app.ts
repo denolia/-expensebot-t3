@@ -59,7 +59,7 @@ function checkUser(ctx: ContextType) {
     console.error("Cannot find registered-users.json file");
     return {
       notRegisteredReply: ctx.reply(
-        `Sorry ${ctx.update.message.from.first_name}, cannot check if you are registered`,
+        `🤯 ${ctx.update.message.from.first_name}, cannot check if you are registered`,
       ),
       registered: false,
     };
@@ -70,7 +70,7 @@ function checkUser(ctx: ContextType) {
     console.log(`User ${username} is not registered`);
     return {
       notRegisteredReply: ctx.reply(
-        `Sorry ${ctx.update.message.from.first_name}, you are not registered`,
+        `👿 ${ctx.update.message.from.first_name}, you are not registered`,
       ),
       registered: false,
     };
@@ -95,7 +95,7 @@ bot.command("newchat", (ctx: ContextType) => {
   if (username && messages[username]) {
     messages[username].length = 0;
   }
-  return ctx.reply(`New chat created!`);
+  return ctx.reply(`Meow! 🐈 New chat created!`);
 });
 
 bot.command("setmodel", (ctx: ContextType) => {
@@ -104,7 +104,7 @@ bot.command("setmodel", (ctx: ContextType) => {
     return notRegisteredReply;
   }
   return ctx.reply(
-    "Select the model",
+    "Meow! 😸 Select the model",
     Markup.keyboard(
       Object.keys(MODELS).map((model) => Markup.button.text(model)),
     )
@@ -122,7 +122,7 @@ bot.hears(Object.keys(MODELS), (ctx) => {
     messages[username].length = 0;
   }
   currentModel = ctx.message.text as keyof typeof MODELS;
-  return ctx.reply(`Selected model: ${currentModel}`);
+  return ctx.reply(`Meow! 😸 Selected model: ${currentModel}`);
 });
 
 // receive plain text message
@@ -134,7 +134,7 @@ bot.on(message("text"), async (ctx) => {
 
   if (!username) {
     console.error("Cannot find username", ctx.message.from);
-    return ctx.reply("Sorry, I cannot find your username");
+    return ctx.reply("😾 Who are you?!");
   }
 
   console.log("Got a message from:", username, "model:", currentModel);
@@ -150,7 +150,7 @@ bot.on(message("text"), async (ctx) => {
 
   messages[username].push(requestMessage);
 
-  const tgMessage = await ctx.reply("Thinking...", {
+  const tgMessage = await ctx.reply("🐈🤔‍Mrrrrrrr...", {
     reply_to_message_id: ctx.message.message_id,
   });
   const tgMessageId = tgMessage.message_id;
@@ -172,7 +172,8 @@ bot.on(message("text"), async (ctx) => {
       await ctx.telegram.deleteMessage(ctx.chat.id, tgMessageId);
       console.log("Responded with an image to", username);
     } else {
-      await ctx.editMessageText("Sorry, I cannot generate an image");
+      await ctx.editMessageText("Meow! 😿 I cannot generate an image");
+      console.log("Could not generate an image response to", username);
     }
   } else {
     // text reply
