@@ -44,6 +44,7 @@ const MODELS = {
   "gpt-3.5": "gpt-3.5-turbo",
   "gpt-4": "gpt-4",
   "gpt-4-turbo": "gpt-4-1106-preview",
+  "dall-e-3": "dall-e-3",
 };
 
 let currentModel = Object.keys(MODELS)[0] as keyof typeof MODELS;
@@ -55,6 +56,7 @@ function checkUser(ctx: ContextType) {
     const data = fs.readFileSync(REGISTERED_USERS_FILE, "utf8");
     registeredUsers = JSON.parse(data).users;
   } else {
+    console.error("Cannot find registered-users.json file");
     return {
       notRegisteredReply: ctx.reply(
         `Sorry ${ctx.update.message.from.first_name}, cannot check if you are registered`,
@@ -65,6 +67,7 @@ function checkUser(ctx: ContextType) {
   const username = ctx.update.message.from.username;
 
   if (!username || !registeredUsers.includes(username)) {
+    console.log(`User ${username} is not registered`);
     return {
       notRegisteredReply: ctx.reply(
         `Sorry ${ctx.update.message.from.first_name}, you are not registered`,
@@ -75,6 +78,7 @@ function checkUser(ctx: ContextType) {
   return { notRegisteredReply: null, registered: true, username };
 }
 
+// bot commands
 bot.start((ctx: ContextType) => {
   const { notRegisteredReply, registered } = checkUser(ctx);
   if (!registered && notRegisteredReply) {
@@ -121,6 +125,7 @@ bot.hears(Object.keys(MODELS), (ctx) => {
   return ctx.reply(`Selected model: ${currentModel}`);
 });
 
+// receive plain text message
 bot.on(message("text"), async (ctx) => {
   const { notRegisteredReply, registered, username } = checkUser(ctx);
   if (!registered && notRegisteredReply) {
@@ -142,22 +147,38 @@ bot.on(message("text"), async (ctx) => {
 
   messages[username].push(requestMessage);
 
-  const completion = await openai.chat.completions.create({
-    model: MODELS[currentModel],
-    messages: messages[username],
-  });
-
-  const responseMessage = completion.choices[0].message;
-  if (responseMessage) {
-    if (!messages[username]) {
-      messages[username] = [];
-    }
-
-    messages[username].push({
-      role: responseMessage.role,
-      content: responseMessage.content,
+  if (MODELS[currentModel] === "dall-e-3") {
+    // Generate image from prompt
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: ctx.message.text,
+      n: 1, // number of images, it supports rn only 1 anyway
+      size: "1024x1024",
     });
-    await ctx.sendMessage(responseMessage.content ?? "-");
+
+    const image_url = response?.data[0]?.url;
+    if (image_url) {
+      await ctx.replyWithPhoto(image_url);
+    }
+  } else {
+    // text reply
+    const completion = await openai.chat.completions.create({
+      model: MODELS[currentModel],
+      messages: messages[username],
+    });
+
+    const responseMessage = completion.choices[0].message;
+    if (responseMessage) {
+      if (!messages[username]) {
+        messages[username] = [];
+      }
+
+      messages[username].push({
+        role: responseMessage.role,
+        content: responseMessage.content,
+      });
+      await ctx.reply(responseMessage.content ?? "-");
+    }
   }
 });
 

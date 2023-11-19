@@ -360,10 +360,10 @@ node-fetch@^2.6.8:
   dependencies:
     whatwg-url "^5.0.0"
 
-openai@^4.12.0:
-  version "4.12.0"
-  resolved "https://registry.yarnpkg.com/openai/-/openai-4.12.0.tgz#0de844eb8ff148b30ebfe7aec6083fa02b67eab3"
-  integrity sha512-vuF8625uHqhaTLMBwCXbLiUBz4Do9LCzY86M3z1/8vnlxKSuFzp/9/1AQQEaqJ95KxHmZbnITBlHhqqoPWwuww==
+openai@^4.19.0:
+  version "4.19.0"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-4.19.0.tgz#201bf971d2296b028f852fe9dabf61c4e5b96e71"
+  integrity sha512-cJbl0noZyAaXVKBTMMq6X5BAvP1pm2rWYDBnZes99NL+Zh5/4NmlAwyuhTZEru5SqGGZIoiYKeMPXy4bm9DI0w==
   dependencies:
     "@types/node" "^18.11.18"
     "@types/node-fetch" "^2.6.4"
@@ -373,6 +373,7 @@ openai@^4.12.0:
     form-data-encoder "1.7.2"
     formdata-node "^4.3.2"
     node-fetch "^2.6.7"
+    web-streams-polyfill "^3.2.1"
 
 p-timeout@^4.1.0:
   version "4.1.0"
@@ -458,6 +459,11 @@ web-streams-polyfill@4.0.0-beta.3:
   version "4.0.0-beta.3"
   resolved "https://registry.yarnpkg.com/web-streams-polyfill/-/web-streams-polyfill-4.0.0-beta.3.tgz#2898486b74f5156095e473efe989dcf185047a38"
   integrity sha512-QW95TCTaHmsYfHDybGMwO5IJIM93I/6vTRk+daHTWFPhwh+C8Cg7j7XyKrwrj8Ib6vYXe0ocYNrmzY4xAAN6ug==
+
+web-streams-polyfill@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/web-streams-polyfill/-/web-streams-polyfill-3.2.1.tgz#71c2718c52b45fd49dbeee88634b3a60ceab42a6"
+  integrity sha512-e0MO3wdXWKrLbL0DgGnUV7WHVuw9OUvL4hjgnPkIeEvESk74gAITi5G606JtZPp39cd8HA9VQzCIvA49LpPN5Q==
 
 webidl-conversions@^3.0.0:
   version "3.0.1"
