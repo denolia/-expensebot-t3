@@ -133,8 +133,11 @@ bot.on(message("text"), async (ctx) => {
   }
 
   if (!username) {
-    return ctx.reply(`Sorry, I cannot find your username`);
+    console.error("Cannot find username", ctx.message.from);
+    return ctx.reply("Sorry, I cannot find your username");
   }
+
+  console.log("Got request message from: ", username);
 
   const requestMessage: ChatCompletionMessageParam = {
     role: "user",
@@ -147,6 +150,11 @@ bot.on(message("text"), async (ctx) => {
 
   messages[username].push(requestMessage);
 
+  const tgMessage = await ctx.reply("Thinking...", {
+    reply_to_message_id: ctx.message.message_id,
+  });
+  const tgMessageId = tgMessage.message_id;
+
   if (MODELS[currentModel] === "dall-e-3") {
     // Generate image from prompt
     const response = await openai.images.generate({
@@ -158,7 +166,12 @@ bot.on(message("text"), async (ctx) => {
 
     const image_url = response?.data[0]?.url;
     if (image_url) {
-      await ctx.replyWithPhoto(image_url);
+      await ctx.replyWithPhoto(image_url, {
+        reply_to_message_id: ctx.message.message_id,
+      });
+      await ctx.telegram.deleteMessage(ctx.chat.id, tgMessageId);
+    } else {
+      await ctx.editMessageText("Sorry, I cannot generate an image");
     }
   } else {
     // text reply
@@ -177,7 +190,12 @@ bot.on(message("text"), async (ctx) => {
         role: responseMessage.role,
         content: responseMessage.content,
       });
-      await ctx.reply(responseMessage.content ?? "-");
+      await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        tgMessageId,
+        undefined,
+        responseMessage.content ?? "-",
+      );
     }
   }
 });
