@@ -95,6 +95,7 @@ bot.command("newchat", (ctx: ContextType) => {
   if (username && messages[username]) {
     messages[username].length = 0;
   }
+  console.log("New chat created for", username);
   return ctx.reply(`Meow! 🐈 New chat created!`);
 });
 
