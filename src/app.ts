@@ -44,7 +44,7 @@ const MODELS = {
   "gpt-3.5": "gpt-3.5-turbo",
   "gpt-4": "gpt-4",
   "gpt-4-turbo": "gpt-4-1106-preview",
-  "dall-e-3": "dall-e-3",
+  "image (dall-e-3)": "dall-e-3",
 };
 
 let currentModel = Object.keys(MODELS)[0] as keyof typeof MODELS;
@@ -84,7 +84,7 @@ bot.start((ctx: ContextType) => {
   if (!registered && notRegisteredReply) {
     return notRegisteredReply;
   }
-  return ctx.reply(`Hello ${ctx.update.message.from.first_name}!`);
+  return ctx.reply(`Meowello 😺 ${ctx.update.message.from.first_name}!`);
 });
 
 bot.command("newchat", (ctx: ContextType) => {
@@ -137,7 +137,7 @@ bot.on(message("text"), async (ctx) => {
     return ctx.reply("Sorry, I cannot find your username");
   }
 
-  console.log("Got request message from: ", username);
+  console.log("Got a message from:", username, "model:", currentModel);
 
   const requestMessage: ChatCompletionMessageParam = {
     role: "user",
@@ -170,6 +170,7 @@ bot.on(message("text"), async (ctx) => {
         reply_to_message_id: ctx.message.message_id,
       });
       await ctx.telegram.deleteMessage(ctx.chat.id, tgMessageId);
+      console.log("Responded with an image to", username);
     } else {
       await ctx.editMessageText("Sorry, I cannot generate an image");
     }
@@ -196,6 +197,15 @@ bot.on(message("text"), async (ctx) => {
         undefined,
         responseMessage.content ?? "-",
       );
+      console.log("Responded to", username);
+    } else {
+      await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        tgMessageId,
+        undefined,
+        "Meow! 😿 I cannot generate a response",
+      );
+      console.log("Could not generate a response to", username);
     }
   }
 });
