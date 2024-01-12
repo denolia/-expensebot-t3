@@ -1,5 +1,5 @@
-# Chat GPT bot
-Telegram bot providing access to Ghat GPT.
+# Chat GPT Telegram bot
+Telegram bot that provides access to Ghat GPT.
 
 ### How to run
 
@@ -11,6 +11,16 @@ Telegram bot providing access to Ghat GPT.
 1. Provide OPENAI_API_KEY. You can get or create the OpenAI api key here: https://platform.openai.com/account/api-keys
     ```
     export OPENAI_API_KEY=1111aaaa1111
+    ```
+1. Create a file `registered-users.json` with the format:
+    ```
+    {
+      "users": [
+        "username1",
+        "username2",
+        ...
+      ]
+    }
     ```
 1. Build and run the app
     ```
