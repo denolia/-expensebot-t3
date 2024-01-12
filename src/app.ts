@@ -42,7 +42,6 @@ console.log("Starting the bot...", Boolean(bot));
 
 const MODELS = {
   "gpt-3.5": "gpt-3.5-turbo",
-  "gpt-4": "gpt-4",
   "gpt-4-turbo": "gpt-4-1106-preview",
   "image (dall-e-3)": "dall-e-3",
 };
@@ -157,57 +156,66 @@ bot.on(message("text"), async (ctx) => {
   const tgMessageId = tgMessage.message_id;
 
   if (MODELS[currentModel] === "dall-e-3") {
-    // Generate image from prompt
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: ctx.message.text,
-      n: 1, // number of images, it supports rn only 1 anyway
-      size: "1024x1024",
-    });
-
-    const image_url = response?.data[0]?.url;
-    if (image_url) {
-      await ctx.replyWithPhoto(image_url, {
-        reply_to_message_id: ctx.message.message_id,
+    try {
+      // Generate image from prompt
+      const response = await openai.images.generate({
+        model: "dall-e-3",
+        prompt: ctx.message.text,
+        n: 1, // number of images, it supports rn only 1 anyway
+        size: "1024x1024",
       });
-      await ctx.telegram.deleteMessage(ctx.chat.id, tgMessageId);
-      console.log("Responded with an image to", username);
-    } else {
-      await ctx.editMessageText("Meow! 😿 I cannot generate an image");
-      console.log("Could not generate an image response to", username);
+      const image_url = response?.data[0]?.url;
+      if (image_url) {
+        await ctx.replyWithPhoto(image_url, {
+          reply_to_message_id: ctx.message.message_id,
+        });
+        await ctx.telegram.deleteMessage(ctx.chat.id, tgMessageId);
+        console.log("Responded with an image to", username);
+      } else {
+        await ctx.editMessageText("Meow! 😿 I cannot generate an image");
+        console.log("Could not generate an image response to", username);
+      }
+    } catch (e: any) {
+      console.error("Error generating image:", e);
+      await ctx.editMessageText("Meow! 😿 An error happened:\n" + e.message);
     }
   } else {
     // text reply
-    const completion = await openai.chat.completions.create({
-      model: MODELS[currentModel],
-      messages: messages[username],
-    });
-
-    const responseMessage = completion.choices[0].message;
-    if (responseMessage) {
-      if (!messages[username]) {
-        messages[username] = [];
-      }
-
-      messages[username].push({
-        role: responseMessage.role,
-        content: responseMessage.content,
+    try {
+      const completion = await openai.chat.completions.create({
+        model: MODELS[currentModel],
+        messages: messages[username],
       });
-      await ctx.telegram.editMessageText(
-        ctx.chat.id,
-        tgMessageId,
-        undefined,
-        responseMessage.content ?? "-",
-      );
-      console.log("Responded to", username);
-    } else {
-      await ctx.telegram.editMessageText(
-        ctx.chat.id,
-        tgMessageId,
-        undefined,
-        "Meow! 😿 I cannot generate a response",
-      );
-      console.log("Could not generate a response to", username);
+
+      const responseMessage = completion.choices[0].message;
+      if (responseMessage) {
+        if (!messages[username]) {
+          messages[username] = [];
+        }
+
+        messages[username].push({
+          role: responseMessage.role,
+          content: responseMessage.content,
+        });
+        await ctx.telegram.editMessageText(
+          ctx.chat.id,
+          tgMessageId,
+          undefined,
+          responseMessage.content ?? "-",
+        );
+        console.log("Responded to", username);
+      } else {
+        await ctx.telegram.editMessageText(
+          ctx.chat.id,
+          tgMessageId,
+          undefined,
+          "Meow! 😿 I cannot generate a response",
+        );
+        console.log("Could not generate a response to", username);
+      }
+    } catch (e: any) {
+      console.error("Error generating response:", e);
+      await ctx.editMessageText("Meow! 😿 An error happened:\n" + e.message);
     }
   }
 });
