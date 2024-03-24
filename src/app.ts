@@ -9,10 +9,15 @@ import fs from "fs";
 
 import { Message, Update } from "telegraf/typings/core/types/typegram";
 
-type ContextType = Context<{
-  message: Update.New & Update.NonChannel & Message.TextMessage;
-  update_id: number;
-}>;
+type ContextType =
+  | Context<{
+      message: Update.New & Update.NonChannel & Message.TextMessage;
+      update_id: number;
+    }>
+  | Context<{
+      message: Update.New & Update.NonChannel & Message.PhotoMessage;
+      update_id: number;
+    }>;
 
 const REGISTERED_USERS_FILE = "./registered-users.json";
 
@@ -221,6 +226,23 @@ bot.on(message("text"), async (ctx) => {
 });
 
 bot.on(message("photo"), async (ctx) => {
+  const { notRegisteredReply, registered, username } = checkUser(ctx);
+  if (!registered && notRegisteredReply) {
+    return notRegisteredReply;
+  }
+
+  if (!username) {
+    console.error("Cannot find username", ctx.message.from);
+    return ctx.reply("😾 Who are you?!");
+  }
+
+  console.log("Got a photo from:", username);
+
+  const tgMessage = await ctx.reply("🐈🤔‍Mrrrrrrr...", {
+    reply_to_message_id: ctx.message.message_id,
+  });
+  const tgMessageId = tgMessage.message_id;
+
   let photoId;
   if (ctx.message.photo) {
     const photo = ctx.message.photo.pop();
@@ -233,7 +255,7 @@ bot.on(message("photo"), async (ctx) => {
       const text = ctx.message.caption ?? "Describe this image";
 
       if (link.href) {
-        const response = await openai.chat.completions.create({
+        const completion = await openai.chat.completions.create({
           model: "gpt-4-vision-preview",
           messages: [
             {
@@ -252,16 +274,33 @@ bot.on(message("photo"), async (ctx) => {
           ],
         });
 
-        console.log(response.choices[0]);
+        console.log(completion.choices[0]);
+        const responseMessage = completion.choices[0].message;
+        if (responseMessage) {
+          await ctx.telegram.editMessageText(
+            ctx.chat.id,
+            tgMessageId,
+            undefined,
+            responseMessage.content ?? "-",
+          );
+          console.log("Responded to", username);
+        } else {
+          await ctx.telegram.editMessageText(
+            ctx.chat.id,
+            tgMessageId,
+            undefined,
+            "Meow! 😿 I cannot generate a response",
+          );
+          console.log("Could not generate a response to", username);
+        }
       } else {
         // todo reply could not get url
-        console.log("could not get url");
+        console.log("Could not get photo url");
+        await ctx.editMessageText("Meow! 😿 could not get photo url:");
       }
-
-      // perform your operation here with the link, e.g downloading the file
-      // Note: download implementation is not here
-    } catch (err) {
-      console.log("error in getting photo: ", err);
+    } catch (e: any) {
+      console.log("Error in getting photo or generating response:", e);
+      await ctx.editMessageText("Meow! 😿 An error happened:\n" + e.message);
     }
   }
 });
