@@ -266,7 +266,7 @@ bot.on(message("photo"), async (ctx) => {
                   type: "image_url",
                   image_url: {
                     url: link.href,
-                    detail: "low",
+                    detail: "high",
                   },
                 },
               ],
@@ -274,7 +274,6 @@ bot.on(message("photo"), async (ctx) => {
           ],
         });
 
-        console.log(completion.choices[0]);
         const responseMessage = completion.choices[0].message;
         if (responseMessage) {
           await ctx.telegram.editMessageText(
