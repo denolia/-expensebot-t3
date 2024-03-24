@@ -220,6 +220,52 @@ bot.on(message("text"), async (ctx) => {
   }
 });
 
+bot.on(message("photo"), async (ctx) => {
+  let photoId;
+  if (ctx.message.photo) {
+    const photo = ctx.message.photo.pop();
+    photoId = photo?.file_id; // get the photo file_id
+  }
+
+  if (photoId) {
+    try {
+      const link = await ctx.telegram.getFileLink(photoId); // get the photo URL
+      const text = ctx.message.caption ?? "Describe this image";
+
+      if (link.href) {
+        const response = await openai.chat.completions.create({
+          model: "gpt-4-vision-preview",
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: link.href,
+                    detail: "low",
+                  },
+                },
+              ],
+            },
+          ],
+        });
+
+        console.log(response.choices[0]);
+      } else {
+        // todo reply could not get url
+        console.log("could not get url");
+      }
+
+      // perform your operation here with the link, e.g downloading the file
+      // Note: download implementation is not here
+    } catch (err) {
+      console.log("error in getting photo: ", err);
+    }
+  }
+});
+
 bot.launch().then();
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
