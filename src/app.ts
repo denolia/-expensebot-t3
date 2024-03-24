@@ -274,6 +274,8 @@ bot.on(message("photo"), async (ctx) => {
           ],
         });
 
+        console.log("Usage:", completion.usage);
+
         const responseMessage = completion.choices[0].message;
         if (responseMessage) {
           await ctx.telegram.editMessageText(
