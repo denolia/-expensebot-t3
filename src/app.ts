@@ -8,6 +8,7 @@ import { checkUser } from "./checkUser";
 import { commandNewChat } from "./commandNewChat";
 
 import { loadRegisteredUsers } from "./registeredUsers";
+import { showModelButtons } from "./showModelButtons";
 import { ContextType, ModelIds, ModelName, Username } from "./types";
 
 loadRegisteredUsers();
@@ -46,20 +47,7 @@ bot.start((ctx: ContextType) => {
 
 bot.command("newchat", commandNewChat(userContext));
 
-bot.command("setmodel", (ctx: ContextType) => {
-  const { notRegisteredReply, registered } = checkUser(ctx);
-  if (!registered && notRegisteredReply) {
-    return notRegisteredReply;
-  }
-  return ctx.reply(
-    "Meow! 😸 Select the model",
-    Markup.keyboard(
-      Object.keys(ModelIds).map((model) => Markup.button.text(model)),
-    )
-      .oneTime(true)
-      .resize(),
-  );
-});
+bot.command("setmodel", showModelButtons());
 
 bot.hears(Object.keys(ModelIds), (ctx) => {
   const { notRegisteredReply, registered, username } = checkUser(ctx);
