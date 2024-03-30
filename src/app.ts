@@ -4,17 +4,12 @@ import { ChatCompletionMessageParam } from "openai/resources";
 import { Markup, Telegraf, Context, Telegram } from "telegraf";
 import { message } from "telegraf/filters";
 import { OpenAI } from "openai";
+import { checkUser } from "./checkUser";
 
-import fs from "fs";
-
-import { Message, Update } from "telegraf/typings/core/types/typegram";
+import { loadRegisteredUsers } from "./registeredUsers";
 import { ContextType, ModelIds, ModelName, Username } from "./types";
 
-const REGISTERED_USERS_FILE = "./registered-users.json";
-
-if (!fs.existsSync(REGISTERED_USERS_FILE)) {
-  throw new Error("Please provide a registered-users.json file");
-}
+loadRegisteredUsers();
 
 const bot_token = process.env.BOT_TOKEN;
 if (!bot_token) {
@@ -39,35 +34,6 @@ console.log("Starting the bot...", Boolean(bot));
 // map username -> selected model
 const currentModels: Record<Username, ModelName | undefined> = {};
 
-function checkUser(ctx: ContextType) {
-  let registeredUsers: string[] = [];
-
-  if (fs.existsSync(REGISTERED_USERS_FILE)) {
-    const data = fs.readFileSync(REGISTERED_USERS_FILE, "utf8");
-    registeredUsers = JSON.parse(data).users;
-  } else {
-    console.error("Cannot find registered-users.json file");
-    return {
-      notRegisteredReply: ctx.reply(
-        `🤯 ${ctx.update.message.from.first_name}, cannot check if you are registered`,
-      ),
-      registered: false,
-    };
-  }
-  const username = ctx.update.message.from.username;
-
-  if (!username || !registeredUsers.includes(username)) {
-    console.log(`User ${username} is not registered`);
-    return {
-      notRegisteredReply: ctx.reply(
-        `👿 ${ctx.update.message.from.first_name}, you are not registered`,
-      ),
-      registered: false,
-    };
-  }
-  return { notRegisteredReply: null, registered: true, username };
-}
-
 // bot commands
 bot.start((ctx: ContextType) => {
   const { notRegisteredReply, registered } = checkUser(ctx);
@@ -77,7 +43,7 @@ bot.start((ctx: ContextType) => {
   return ctx.reply(`Meowello 😺 ${ctx.update.message.from.first_name}!`);
 });
 
-function newChat() {
+function newChat(userContext: Record<Username, ChatCompletionMessageParam[]>) {
   return (ctx: ContextType) => {
     const { notRegisteredReply, registered, username } = checkUser(ctx);
     if (!registered && notRegisteredReply) {
@@ -91,7 +57,7 @@ function newChat() {
   };
 }
 
-bot.command("newchat", newChat());
+bot.command("newchat", newChat(userContext));
 
 bot.command("setmodel", (ctx: ContextType) => {
   const { notRegisteredReply, registered } = checkUser(ctx);
