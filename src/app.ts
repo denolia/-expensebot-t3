@@ -30,7 +30,8 @@ const openai = new OpenAI({
   apiKey: openAiApiKey,
 });
 
-const messages: Record<Username, ChatCompletionMessageParam[]> = {};
+// chat history for users, cleared with /newchat command
+const userContext: Record<Username, ChatCompletionMessageParam[]> = {};
 
 const bot = new Telegraf(bot_token);
 console.log("Starting the bot...", Boolean(bot));
@@ -76,17 +77,21 @@ bot.start((ctx: ContextType) => {
   return ctx.reply(`Meowello 😺 ${ctx.update.message.from.first_name}!`);
 });
 
-bot.command("newchat", (ctx: ContextType) => {
-  const { notRegisteredReply, registered, username } = checkUser(ctx);
-  if (!registered && notRegisteredReply) {
-    return notRegisteredReply;
-  }
-  if (username && messages[username]) {
-    messages[username].length = 0;
-  }
-  console.log("New chat created for", username);
-  return ctx.reply(`Meow! 🐈 New chat created!`);
-});
+function newChat() {
+  return (ctx: ContextType) => {
+    const { notRegisteredReply, registered, username } = checkUser(ctx);
+    if (!registered && notRegisteredReply) {
+      return notRegisteredReply;
+    }
+    if (username && userContext[username]) {
+      userContext[username].length = 0;
+    }
+    console.log("New chat created for", username);
+    return ctx.reply(`Meow! 🐈 New chat created!`);
+  };
+}
+
+bot.command("newchat", newChat());
 
 bot.command("setmodel", (ctx: ContextType) => {
   const { notRegisteredReply, registered } = checkUser(ctx);
@@ -113,8 +118,8 @@ bot.hears(Object.keys(ModelIds), (ctx) => {
     return ctx.reply("😾 Who are you?!");
   }
 
-  if (username && messages[username]) {
-    messages[username].length = 0;
+  if (username && userContext[username]) {
+    userContext[username].length = 0;
   }
 
   currentModels[username] = ctx.message.text as ModelName;
@@ -142,11 +147,11 @@ bot.on(message("text"), async (ctx) => {
     content: ctx.message.text,
   };
 
-  if (!messages[username]) {
-    messages[username] = [];
+  if (!userContext[username]) {
+    userContext[username] = [];
   }
 
-  messages[username].push(requestMessage);
+  userContext[username].push(requestMessage);
 
   const tgMessage = await ctx.reply("🐈🤔‍Mrrrrrrr...", {
     reply_to_message_id: ctx.message.message_id,
@@ -186,17 +191,17 @@ bot.on(message("text"), async (ctx) => {
     try {
       const completion = await openai.chat.completions.create({
         model: ModelIds[selectedUserModel],
-        messages: messages[username],
+        messages: userContext[username],
       });
       console.log("Usage:", completion.usage);
 
       const responseMessage = completion.choices[0].message;
       if (responseMessage) {
-        if (!messages[username]) {
-          messages[username] = [];
+        if (!userContext[username]) {
+          userContext[username] = [];
         }
 
-        messages[username].push({
+        userContext[username].push({
           role: responseMessage.role,
           content: responseMessage.content,
         });
