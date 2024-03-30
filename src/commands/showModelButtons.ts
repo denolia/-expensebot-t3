@@ -1,6 +1,6 @@
 import { Markup } from "telegraf";
-import { checkUser } from "./checkUser";
-import { ContextType, ModelIds } from "./types";
+import { checkUser } from "../checkUser";
+import { ContextType, ModelIds } from "../types";
 
 export function showModelButtons() {
   return (ctx: ContextType) => {

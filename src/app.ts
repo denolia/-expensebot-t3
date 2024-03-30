@@ -5,11 +5,18 @@ import { Markup, Telegraf, Context, Telegram } from "telegraf";
 import { message } from "telegraf/filters";
 import { OpenAI } from "openai";
 import { checkUser } from "./checkUser";
-import { commandNewChat } from "./commandNewChat";
+import { commandNewChat } from "./commands/commandNewChat";
+import { commandSetModel } from "./commands/setModel";
 
 import { loadRegisteredUsers } from "./registeredUsers";
-import { showModelButtons } from "./showModelButtons";
-import { ContextType, ModelIds, ModelName, Username } from "./types";
+import { showModelButtons } from "./commands/showModelButtons";
+import {
+  ContextType,
+  ModelIds,
+  ModelName,
+  TextContextType,
+  Username,
+} from "./types";
 
 loadRegisteredUsers();
 
@@ -49,23 +56,7 @@ bot.command("newchat", commandNewChat(userContext));
 
 bot.command("setmodel", showModelButtons());
 
-bot.hears(Object.keys(ModelIds), (ctx) => {
-  const { notRegisteredReply, registered, username } = checkUser(ctx);
-  if (!registered && notRegisteredReply) {
-    return notRegisteredReply;
-  }
-
-  if (!username) {
-    return ctx.reply("😾 Who are you?!");
-  }
-
-  if (username && userContext[username]) {
-    userContext[username].length = 0;
-  }
-
-  currentModels[username] = ctx.message.text as ModelName;
-  return ctx.reply(`Meow! 😸 Selected model: ${currentModels[username]}`);
-});
+bot.hears(Object.keys(ModelIds), commandSetModel(userContext, currentModels));
 
 // receive plain text message
 bot.on(message("text"), async (ctx) => {
