@@ -5,6 +5,7 @@ import { Markup, Telegraf, Context, Telegram } from "telegraf";
 import { message } from "telegraf/filters";
 import { OpenAI } from "openai";
 import { checkUser } from "./checkUser";
+import { commandNewChat } from "./commandNewChat";
 
 import { loadRegisteredUsers } from "./registeredUsers";
 import { ContextType, ModelIds, ModelName, Username } from "./types";
@@ -43,21 +44,7 @@ bot.start((ctx: ContextType) => {
   return ctx.reply(`Meowello 😺 ${ctx.update.message.from.first_name}!`);
 });
 
-function newChat(userContext: Record<Username, ChatCompletionMessageParam[]>) {
-  return (ctx: ContextType) => {
-    const { notRegisteredReply, registered, username } = checkUser(ctx);
-    if (!registered && notRegisteredReply) {
-      return notRegisteredReply;
-    }
-    if (username && userContext[username]) {
-      userContext[username].length = 0;
-    }
-    console.log("New chat created for", username);
-    return ctx.reply(`Meow! 🐈 New chat created!`);
-  };
-}
-
-bot.command("newchat", newChat(userContext));
+bot.command("newchat", commandNewChat(userContext));
 
 bot.command("setmodel", (ctx: ContextType) => {
   const { notRegisteredReply, registered } = checkUser(ctx);
