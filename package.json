@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Telegram bot",
   "main": "src/app.ts",
-  "repository": "https://github.com/denolia/expensebot-t3.git",
+  "repository": "https://github.com/denolia/chatgpt-telegram-bot.git",
   "author": "Julia Bubnova <bubnova.j.i@gmail.com>",
   "license": "MIT",
   "scripts": {
@@ -12,14 +12,14 @@
     "build": "tsc -p ."
   },
   "dependencies": {
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.5",
     "openai": "^4.24.6",
-    "telegraf": "^4.15.3"
+    "telegraf": "^4.16.3"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "prettier": "^3.2.1",
-    "tsx": "^4.7.0",
-    "typescript": "5.3.3"
+    "@types/node": "^20.12.2",
+    "prettier": "^3.2.5",
+    "tsx": "^4.7.1",
+    "typescript": "5.4.3"
   }
 }
