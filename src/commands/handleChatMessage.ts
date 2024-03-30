@@ -1,15 +1,7 @@
 import { OpenAI } from "openai";
 import { ChatCompletionMessageParam } from "openai/resources";
-import { Context, NarrowedContext } from "telegraf";
-import { Message, Update } from "telegraf/typings/core/types/typegram";
 import { checkUser } from "../checkUser";
-import {
-  ContextType,
-  ModelIds,
-  ModelName,
-  TextContextType,
-  Username,
-} from "../types";
+import { ModelIds, ModelName, Username } from "../types";
 
 export function handleChatMessage(
   openai: OpenAI,

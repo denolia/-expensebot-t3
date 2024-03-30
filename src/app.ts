@@ -1,23 +1,17 @@
 import "dotenv/config";
+import { OpenAI } from "openai";
 import { ChatCompletionMessageParam } from "openai/resources";
 
-import { Markup, Telegraf, Context, Telegram } from "telegraf";
+import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import { OpenAI } from "openai";
 import { checkUser } from "./checkUser";
 import { commandNewChat } from "./commands/commandNewChat";
 import { handleChatMessage } from "./commands/handleChatMessage";
 import { commandSetModel } from "./commands/setModel";
+import { showModelButtons } from "./commands/showModelButtons";
 
 import { loadRegisteredUsers } from "./registeredUsers";
-import { showModelButtons } from "./commands/showModelButtons";
-import {
-  ContextType,
-  ModelIds,
-  ModelName,
-  TextContextType,
-  Username,
-} from "./types";
+import { ContextType, ModelIds, ModelName, Username } from "./types";
 
 loadRegisteredUsers();
 

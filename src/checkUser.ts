@@ -1,5 +1,5 @@
 import { registeredUsers } from "./registeredUsers";
-import { ContextType, Username } from "./types";
+import { ContextType } from "./types";
 
 export function checkUser(ctx: ContextType) {
   const username = ctx.update.message.from.username;
