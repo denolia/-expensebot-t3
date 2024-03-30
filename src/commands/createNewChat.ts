@@ -2,7 +2,7 @@ import { ChatCompletionMessageParam } from "openai/resources";
 import { checkUser } from "../checkUser";
 import { ContextType, Username } from "../types";
 
-export function commandNewChat(
+export function createNewChat(
   userContext: Record<Username, ChatCompletionMessageParam[]>,
 ) {
   return (ctx: ContextType) => {

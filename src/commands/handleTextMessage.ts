@@ -3,7 +3,7 @@ import { ChatCompletionMessageParam } from "openai/resources";
 import { checkUser } from "../checkUser";
 import { ModelIds, ModelName, Username } from "../types";
 
-export function handleChatMessage(
+export function handleTextMessage(
   openai: OpenAI,
   userContext: Record<Username, ChatCompletionMessageParam[]>,
   currentModels: Record<Username, ModelName | undefined>,
