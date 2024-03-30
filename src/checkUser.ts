@@ -13,5 +13,5 @@ export function checkUser(ctx: ContextType) {
       registered: false,
     };
   }
-  return { notRegisteredReply: null, registered: true, username };
+  return { registered: true, username };
 }

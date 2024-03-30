@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Telegram bot",
   "main": "src/app.ts",
-  "type": "module",
   "repository": "https://github.com/denolia/expensebot-t3.git",
   "author": "Julia Bubnova <bubnova.j.i@gmail.com>",
   "license": "MIT",
