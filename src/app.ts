@@ -4,15 +4,15 @@ import { ChatCompletionMessageParam } from "openai/resources";
 
 import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import { checkUser } from "./checkUser";
-import { createNewChat } from "./commands/createNewChat";
-import { handlePhotoMessage } from "./commands/handlePhotoMessage";
-import { handleTextMessage } from "./commands/handleTextMessage";
-import { commandSetModel } from "./commands/setModel";
-import { showModelButtons } from "./commands/showModelButtons";
+import { createNewChat } from "./handlers/createNewChat";
+import { handlePhotoMessage } from "./handlers/handlePhotoMessage";
+import { handleTextMessage } from "./handlers/handleTextMessage";
+import { commandSetModel } from "./handlers/setModel";
+import { showModelButtons } from "./handlers/showModelButtons";
+import { startBot } from "./handlers/startBot";
 
 import { loadRegisteredUsers } from "./registeredUsers";
-import { ContextType, ModelIds, ModelName, Username } from "./types";
+import { ModelIds, ModelName, Username } from "./types";
 
 loadRegisteredUsers();
 
@@ -40,13 +40,7 @@ console.log("Starting the bot...", Boolean(bot));
 const currentModels: Record<Username, ModelName | undefined> = {};
 
 // bot commands
-bot.start((ctx: ContextType) => {
-  const { notRegisteredReply, registered } = checkUser(ctx);
-  if (!registered && notRegisteredReply) {
-    return notRegisteredReply;
-  }
-  return ctx.reply(`Meowello 😺 ${ctx.update.message.from.first_name}!`);
-});
+bot.start(startBot());
 
 bot.command("newchat", createNewChat(userContext));
 
