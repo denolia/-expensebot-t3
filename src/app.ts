@@ -45,13 +45,20 @@ const messages: Record<Username, ChatCompletionMessageParam[]> = {};
 const bot = new Telegraf(bot_token);
 console.log("Starting the bot...", Boolean(bot));
 
-const MODELS = {
-  "gpt-3.5": "gpt-3.5-turbo",
-  "gpt-4-turbo": "gpt-4-1106-preview",
-  "image (dall-e-3)": "dall-e-3",
+enum ModelName {
+  GPT3_5 = "gpt-3.5",
+  GPT4 = "gpt-4-turbo",
+  DALLE_3 = "image (dall-e-3)",
+}
+
+const ModelIds = {
+  [ModelName.GPT3_5]: "gpt-3.5-turbo",
+  [ModelName.GPT4]: "gpt-4-1106-preview",
+  [ModelName.DALLE_3]: "dall-e-3",
 };
 
-let currentModel = Object.keys(MODELS)[0] as keyof typeof MODELS;
+// map username -> selected model
+const currentModels: Record<Username, ModelName | undefined> = {};
 
 function checkUser(ctx: ContextType) {
   let registeredUsers: string[] = [];
@@ -111,23 +118,29 @@ bot.command("setmodel", (ctx: ContextType) => {
   return ctx.reply(
     "Meow! 😸 Select the model",
     Markup.keyboard(
-      Object.keys(MODELS).map((model) => Markup.button.text(model)),
+      Object.keys(ModelIds).map((model) => Markup.button.text(model)),
     )
       .oneTime(true)
       .resize(),
   );
 });
 
-bot.hears(Object.keys(MODELS), (ctx) => {
+bot.hears(Object.keys(ModelIds), (ctx) => {
   const { notRegisteredReply, registered, username } = checkUser(ctx);
   if (!registered && notRegisteredReply) {
     return notRegisteredReply;
   }
+
+  if (!username) {
+    return ctx.reply("😾 Who are you?!");
+  }
+
   if (username && messages[username]) {
     messages[username].length = 0;
   }
-  currentModel = ctx.message.text as keyof typeof MODELS;
-  return ctx.reply(`Meow! 😸 Selected model: ${currentModel}`);
+
+  currentModels[username] = ctx.message.text as ModelName;
+  return ctx.reply(`Meow! 😸 Selected model: ${currentModels[username]}`);
 });
 
 // receive plain text message
@@ -142,7 +155,9 @@ bot.on(message("text"), async (ctx) => {
     return ctx.reply("😾 Who are you?!");
   }
 
-  console.log("Got a message from:", username, "model:", currentModel);
+  const selectedUserModel = currentModels[username] ?? ModelName.GPT3_5;
+
+  console.log("Got a message from:", username, "model:", selectedUserModel);
 
   const requestMessage: ChatCompletionMessageParam = {
     role: "user",
@@ -160,16 +175,20 @@ bot.on(message("text"), async (ctx) => {
   });
   const tgMessageId = tgMessage.message_id;
 
-  if (MODELS[currentModel] === "dall-e-3") {
+  if (selectedUserModel === ModelName.DALLE_3) {
     try {
       // Generate image from prompt
       const response = await openai.images.generate({
-        model: "dall-e-3",
+        model: ModelIds[ModelName.DALLE_3],
         prompt: ctx.message.text,
         n: 1, // number of images, it supports rn only 1 anyway
         size: "1024x1024",
       });
+      // no usage info in dalle-3 response
+      // console.log("Usage:");
+
       const image_url = response?.data[0]?.url;
+
       if (image_url) {
         await ctx.replyWithPhoto(image_url, {
           reply_to_message_id: ctx.message.message_id,
@@ -188,9 +207,10 @@ bot.on(message("text"), async (ctx) => {
     // text reply
     try {
       const completion = await openai.chat.completions.create({
-        model: MODELS[currentModel],
+        model: ModelIds[selectedUserModel],
         messages: messages[username],
       });
+      console.log("Usage:", completion.usage);
 
       const responseMessage = completion.choices[0].message;
       if (responseMessage) {
