@@ -8,16 +8,7 @@ import { OpenAI } from "openai";
 import fs from "fs";
 
 import { Message, Update } from "telegraf/typings/core/types/typegram";
-
-type ContextType =
-  | Context<{
-      message: Update.New & Update.NonChannel & Message.TextMessage;
-      update_id: number;
-    }>
-  | Context<{
-      message: Update.New & Update.NonChannel & Message.PhotoMessage;
-      update_id: number;
-    }>;
+import { ContextType, ModelIds, ModelName, Username } from "./types";
 
 const REGISTERED_USERS_FILE = "./registered-users.json";
 
@@ -39,23 +30,10 @@ const openai = new OpenAI({
   apiKey: openAiApiKey,
 });
 
-type Username = string;
 const messages: Record<Username, ChatCompletionMessageParam[]> = {};
 
 const bot = new Telegraf(bot_token);
 console.log("Starting the bot...", Boolean(bot));
-
-enum ModelName {
-  GPT3_5 = "gpt-3.5",
-  GPT4 = "gpt-4-turbo",
-  DALLE_3 = "image (dall-e-3)",
-}
-
-const ModelIds = {
-  [ModelName.GPT3_5]: "gpt-3.5-turbo",
-  [ModelName.GPT4]: "gpt-4-1106-preview",
-  [ModelName.DALLE_3]: "dall-e-3",
-};
 
 // map username -> selected model
 const currentModels: Record<Username, ModelName | undefined> = {};
