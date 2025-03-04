@@ -19,7 +19,7 @@ export function handleTextMessage(
       return ctx.reply("😾 Who are you?!");
     }
 
-    const selectedUserModel = currentModels[username] ?? ModelName.GPT3_5;
+    const selectedUserModel = currentModels[username] ?? ModelName.GPT4_0;
 
     console.log("Got a message from:", username, "model:", selectedUserModel);
 

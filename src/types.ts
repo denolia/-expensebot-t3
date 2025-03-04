@@ -16,13 +16,13 @@ export type ContextType = TextContextType | PhotoContextType;
 export type Username = string;
 
 export enum ModelName {
-  GPT3_5 = "gpt-3.5",
-  GPT4 = "gpt-4-turbo",
+  GPT4_0 = "gpt-4o",
+  GPT40_MINI = "gpt-4o-mini",
   DALLE_3 = "image (dall-e-3)",
 }
 
 export const ModelIds = {
-  [ModelName.GPT3_5]: "gpt-3.5-turbo",
-  [ModelName.GPT4]: "gpt-4-1106-preview",
+  [ModelName.GPT40_MINI]: "gpt-4o-mini",
+  [ModelName.GPT4_0]: "gpt-4o",
   [ModelName.DALLE_3]: "dall-e-3",
 };
